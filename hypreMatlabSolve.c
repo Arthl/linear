@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
     
     
    /*  Read the RHS previously assembled */
-   iErr = HYPRE_ParVectorRead(MPI_COMM_WORLD, "vectorB.0", &par_f);
+   iErr = HYPRE_ParVectorRead(MPI_COMM_WORLD, "vectorF.0", &par_f);
    if (iErr)
    {
        hypre_printf("ERROR: Problem reading in the right-hand-side!\n");
