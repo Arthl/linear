@@ -39,12 +39,14 @@ int main (int argc, char *argv[])
    HYPRE_ParCSRMatrix parcsr_A;
    HYPRE_IJMatrix ij_G;
    HYPRE_ParCSRMatrix parcsr_G;
-   //HYPRE_IJMatrix ij_Gprime;
-   //HYPRE_ParCSRMatrix parcsr_Gprime;
    HYPRE_IJVector ij_f;
    HYPRE_ParVector par_f;
+   HYPRE_IJVector ij_h;
+   HYPRE_ParVector par_h;
    HYPRE_IJVector ij_vel;
    HYPRE_ParVector par_vel;
+   //HYPRE_IJVector ij_pres;
+   //HYPRE_ParVector par_pres;
    //ADD g, and pres with dimension of G when G can be readable.
 
    char saveMatsAs;
@@ -118,28 +120,6 @@ int main (int argc, char *argv[])
    iErr += HYPRE_IJMatrixGetObject( ij_G, &object);
    parcsr_G = (HYPRE_ParCSRMatrix) object;
     
-
-   /* Read the matrix previously assembled
-      <filename>  = IJ.A.out to read in what has been printed out (processor numbers are omitted). */
-   //  iErr = HYPRE_IJMatrixRead( "matrixA", MPI_COMM_WORLD, HYPRE_PARCSR, &ij_Gprime );
-
-
-   //  if (iErr) 
-   //  {
-   //      hypre_printf("ERROR: Problem reading in the system matrix!\n");
-   //      exit(1);
-   //  }
-   //  /* Get dimension info */
-   //  iErr = HYPRE_IJMatrixGetLocalRange( ij_Gprime,
-   //                                     &first_local_row, &last_local_row ,
-   //                                     &first_local_col, &last_local_col );
-    
-   //  //local_num_rows = last_local_row - first_local_row + 1;
-   //  local_num_cols = last_local_col - first_local_col + 1;
-   // /* Get the parcsr matrix object to use */
-   // iErr += HYPRE_IJMatrixGetObject( ij_Gprime, &object);
-   // parcsr_Gprime = (HYPRE_ParCSRMatrix) object;
-    
     
    /*  Read the RHS previously assembled */
    iErr = HYPRE_ParVectorRead(MPI_COMM_WORLD, "vectorF.0", &par_f);
@@ -149,6 +129,15 @@ int main (int argc, char *argv[])
        exit(1);
    }
    ij_f = NULL;
+
+   /*  Read the RHS previously assembled */
+   iErr = HYPRE_ParVectorRead(MPI_COMM_WORLD, "vectorH.0", &par_h);
+   if (iErr)
+   {
+       hypre_printf("ERROR: Problem reading in the right-hand-side!\n");
+       exit(1);
+   }
+   ij_h = NULL;
     
     
    /* Create the initial solution and set it to zero */
@@ -186,11 +175,11 @@ int main (int argc, char *argv[])
       HYPRE_PCGSetLogging(solver, 1); /* needed to get run info later */
 
       /* Now setup and solve! */
-      HYPRE_ParCSRPCGSetupArthur2(solver, parcsr_A, parcsr_G, par_f, par_vel);
-      HYPRE_ParCSRPCGSolveArthur2(solver, parcsr_A, parcsr_G, par_f, par_vel);
+      // HYPRE_ParCSRPCGSetupArthur2(solver, parcsr_A, parcsr_G, par_f, par_vel);
+      // HYPRE_ParCSRPCGSolveArthur2(solver, parcsr_A, parcsr_G, par_f, par_vel);
 
-      //HYPRE_ParCSRPCGSetupArthurTRUE(solver, parcsr_A, parcsr_G, par_vel, par_f, par_vel, par_vel);
-      //HYPRE_ParCSRPCGSolveArthurTRUE(solver, parcsr_A, parcsr_G, par_vel, par_f, par_vel, par_vel);
+      HYPRE_ParCSRPCGSetupArthurTRUE(solver, parcsr_A, parcsr_G, par_vel, par_f, par_vel, par_vel);
+      HYPRE_ParCSRPCGSolveArthurTRUE(solver, parcsr_A, parcsr_G, par_vel, par_f, par_vel, par_vel);
 
       /* Run info - needed logging turned on */
       HYPRE_PCGGetNumIterations(solver, &num_iterations);
@@ -215,10 +204,10 @@ int main (int argc, char *argv[])
    /* Clean up */
    HYPRE_IJMatrixDestroy(ij_A);
    HYPRE_IJMatrixDestroy(ij_G);
-   //HYPRE_IJMatrixDestroy(ij_Gprime);
    HYPRE_IJVectorDestroy(ij_f);
+   HYPRE_IJVectorDestroy(ij_h);
    HYPRE_IJVectorDestroy(ij_vel);
-
+   // HYPRE_IJVectorDestroy(ij_pres);
 
    /* Finalize MPI*/
    if (myid == 0)

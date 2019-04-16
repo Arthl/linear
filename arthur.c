@@ -140,6 +140,8 @@ hypre_PCGSolveArthurTRUE( void *pcg_vdata,
 {
    hypre_PCGData  *pcg_data     =  (hypre_PCGData *)pcg_vdata;
    hypre_PCGFunctions *pcg_functions = pcg_data->functions;
+   // hypre_PCGFunctions2 *pcg_functions2 = pcg_data->functions;
+   // And line 491
 
    HYPRE_Real      r_tol        = (pcg_data -> tol);
    HYPRE_Real      a_tol        = (pcg_data -> a_tol);
@@ -487,6 +489,7 @@ hypre_PCGSolveArthurTRUE( void *pcg_vdata,
          /* r = b - Ax */
          (*(pcg_functions->CopyVector))(b, r);
          (*(pcg_functions->Matvec))(matvec_data, -1.0, A, x, 1.0, r);
+         // (*(pcg_functions->MatvecT))(matvec_data, -1.0, A, x, 1.0, r);
 
          /* set i_prod for convergence test */
          if (two_norm)

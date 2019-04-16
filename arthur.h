@@ -3,14 +3,6 @@
 
 #include "_hypre_parcsr_ls.h"
 
-HYPRE_Int HYPRE_ParCSRPCGSetupArthur2 ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix K , HYPRE_ParVector b , HYPRE_ParVector x );
-HYPRE_Int HYPRE_ParCSRPCGSolveArthur2 ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix K , HYPRE_ParVector b , HYPRE_ParVector x );
-
-HYPRE_Int HYPRE_ParCSRPCGSetupArthurTRUE ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix G , HYPRE_ParVector f , HYPRE_ParVector h , HYPRE_ParVector vel, HYPRE_ParVector pres );
-HYPRE_Int HYPRE_ParCSRPCGSolveArthurTRUE ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix G , HYPRE_ParVector f , HYPRE_ParVector h , HYPRE_ParVector vel, HYPRE_ParVector pres );
-
-
-
 typedef struct
 {
    char *       (*CAlloc)        ( size_t count, size_t elt_size );
@@ -21,6 +13,8 @@ typedef struct
    HYPRE_Int    (*DestroyVector) ( void *vector );
    void *       (*MatvecCreate)  ( void *A, void *x );
    HYPRE_Int    (*Matvec)        ( void *matvec_data, HYPRE_Complex alpha, void *A,
+                                   void *x, HYPRE_Complex beta, void *y );
+   HYPRE_Int    (*MatvecT)       ( void *matvec_data, HYPRE_Complex alpha, void *A,
                                    void *x, HYPRE_Complex beta, void *y );
    HYPRE_Int    (*MatvecDestroy) ( void *matvec_data );
    HYPRE_Real   (*InnerProd)     ( void *x, void *y );
@@ -71,7 +65,9 @@ typedef struct
    HYPRE_Real  *norms;
    HYPRE_Real  *rel_norms;
 
-} hypre_PCGData;
+} hypre_PCGData2;
+
+#define hypre_PCGDataOwnsMatvecData(pcgdata)  ((pcgdata) -> owns_matvec_data)
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,7 +87,7 @@ extern "C" {
  **/
 
 hypre_PCGFunctions2 *
-hypre_PCGFunctionsCreate(
+hypre_PCGFunctionsCreate2(
    char *       (*CAlloc)        ( size_t count, size_t elt_size ),
    HYPRE_Int    (*Free)          ( char *ptr ),
    HYPRE_Int    (*CommInfo)      ( void  *A, HYPRE_Int   *my_id,
@@ -100,6 +96,8 @@ hypre_PCGFunctionsCreate(
    HYPRE_Int    (*DestroyVector) ( void *vector ),
    void *       (*MatvecCreate)  ( void *A, void *x ),
    HYPRE_Int    (*Matvec)        ( void *matvec_data, HYPRE_Complex alpha, void *A,
+                                   void *x, HYPRE_Complex beta, void *y ),
+   HYPRE_Int    (*MatvecT)       ( void *matvec_data, HYPRE_Complex alpha, void *A,
                                    void *x, HYPRE_Complex beta, void *y ),
    HYPRE_Int    (*MatvecDestroy) ( void *matvec_data ),
    HYPRE_Real   (*InnerProd)     ( void *x, void *y ),
@@ -118,10 +116,25 @@ hypre_PCGFunctionsCreate(
  **/
 
 void *
-hypre_PCGCreate( hypre_PCGFunctions2 *pcg_functions2 );
+hypre_PCGCreate2( hypre_PCGFunctions2 *pcg_functions2 );
+
+#ifdef __cplusplus
+}
+#endif
+
+
+void *hypre_PCGCreate2 ( hypre_PCGFunctions2 *pcg_functions2 );
+
+HYPRE_Int HYPRE_ParCSRPCGSetupArthur2 ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix K , HYPRE_ParVector b , HYPRE_ParVector x );
+HYPRE_Int HYPRE_ParCSRPCGSolveArthur2 ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix K , HYPRE_ParVector b , HYPRE_ParVector x );
+
+HYPRE_Int HYPRE_ParCSRPCGSetupArthurTRUE ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix G , HYPRE_ParVector f , HYPRE_ParVector h , HYPRE_ParVector vel, HYPRE_ParVector pres );
+HYPRE_Int HYPRE_ParCSRPCGSolveArthurTRUE ( HYPRE_Solver solver , HYPRE_ParCSRMatrix A , HYPRE_ParCSRMatrix G , HYPRE_ParVector f , HYPRE_ParVector h , HYPRE_ParVector vel, HYPRE_ParVector pres );
+
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+
