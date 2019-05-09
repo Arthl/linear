@@ -63,7 +63,7 @@ default: all
 ########################################################################
 # HypreMatlabSolve
 # ########################################################################
-hypreMatlabSolve: hypreMatlabSolve.o arthur.o
+hypreMatlabSolve: csparse.o arthur.o hypreMatlabSolve.o
 	$(CC) -o $@ $^ $(LFLAGS)
          
 ########################################################################
